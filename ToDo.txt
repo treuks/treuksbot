@@ -1,0 +1,4 @@
+To do list: (from easiest to hardest)
+1: Properly integrate databases
+2: Make automatic credential refreshing
+3: TBC
