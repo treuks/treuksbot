@@ -9,13 +9,43 @@ use twitch_irc::SecureTCPTransport;
 use twitch_irc::TwitchIRCClient;
 //use std::collections::HashMap;
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use crate::api::{helix, sanitization, translation, translationv2, types};
 
-/*pub async fn parse_time(){
+pub async fn parse_time(duration: Duration) -> Result<String, Box<dyn std::error::Error>> {
+    let duration_seconds = duration.as_secs() % 60;
+    let duration_minutes = (duration.as_secs() / 60) % 60;
+    let duration_hours = (duration.as_secs() / 60) / 60;
+    let duration_days = duration.as_secs() / (24 * 60 * 60);
+    let mut time_result = Vec::new();
 
-}*/
+    if duration_days > 1 {
+        time_result.push(format!("{} days ", duration_days));
+    } else if duration_days == 1 { 
+        time_result.push(format!("{} day ", duration_days));
+    }
+
+    if duration_hours > 1 {
+        time_result.push(format!("{} hours ", duration_hours));
+    } else if duration_hours == 1 {
+        time_result.push(format!("{} hour ", duration_hours));
+    }
+
+    if duration_minutes > 1 {
+        time_result.push(format!("{} minutes ", duration_minutes));
+    } else if duration_minutes == 1 {
+        time_result.push(format!("{} minute ", duration_minutes));
+    }
+
+    if duration_seconds > 1 {
+        time_result.push(format!("{} seconds ", duration_seconds));
+    } else if duration_seconds == 1 {
+        time_result.push(format!("{} second ", duration_seconds));
+    }
+
+    Ok(time_result.into_iter().map(|i| i.to_string()).collect::<String>())
+}
 
 #[tokio::main]
 pub async fn main() {
@@ -77,15 +107,9 @@ pub async fn main() {
                         if cleanargs[0] == "ping" {
                             let ping_time = Instant::now();
                             let cpingtime = ping_time - run_time;
-                            let pingtime_minutes = (cpingtime.as_secs() / 60) % 60;
-                            let pingtime_hours = (cpingtime.as_secs() / 60) / 60;
-                            let pingtime_days = cpingtime.as_secs() / (24 * 60 * 60);
 
-                            client.reply_to_privmsg(format!("🌲 Pong! The bot has been running for ({}d) ({}h) ({}m) ({}s) Version: {}",
-                    pingtime_days,
-                    pingtime_hours,
-                    pingtime_minutes,
-                    cpingtime.as_secs() % 60,
+                            client.reply_to_privmsg(format!("🌲 Pong! The bot has been running for {} | Version: {}",
+                    parse_time(cpingtime).await.unwrap(),
                     env!("CARGO_PKG_VERSION")
                     ), &msg).await.unwrap();
                         }
