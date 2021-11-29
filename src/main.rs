@@ -11,7 +11,7 @@ use twitch_irc::TwitchIRCClient;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use crate::api::{helix, sanitization, translation, translationv2, types};
+use crate::api::{helix, libre_translate, lingva_translate, sanitization, types};
 
 pub async fn parse_time(duration: Duration) -> Result<String, Box<dyn std::error::Error>> {
     let duration_seconds = duration.as_secs() % 60;
@@ -22,7 +22,7 @@ pub async fn parse_time(duration: Duration) -> Result<String, Box<dyn std::error
 
     if duration_days > 1 {
         time_result.push(format!("{} days ", duration_days));
-    } else if duration_days == 1 { 
+    } else if duration_days == 1 {
         time_result.push(format!("{} day ", duration_days));
     }
 
@@ -44,7 +44,10 @@ pub async fn parse_time(duration: Duration) -> Result<String, Box<dyn std::error
         time_result.push(format!("{} second ", duration_seconds));
     }
 
-    Ok(time_result.into_iter().map(|i| i.to_string()).collect::<String>())
+    Ok(time_result
+        .into_iter()
+        .map(|i| i.to_string())
+        .collect::<String>())
 }
 
 #[tokio::main]
@@ -108,10 +111,17 @@ pub async fn main() {
                             let ping_time = Instant::now();
                             let cpingtime = ping_time - run_time;
 
-                            client.reply_to_privmsg(format!("🌲 Pong! The bot has been running for {} | Version: {}",
-                    parse_time(cpingtime).await.unwrap(),
-                    env!("CARGO_PKG_VERSION")
-                    ), &msg).await.unwrap();
+                            client
+                                .reply_to_privmsg(
+                                    format!(
+                                        "🌲 Pong! The bot has been running for {} | Version: {}",
+                                        parse_time(cpingtime).await.unwrap(),
+                                        env!("CARGO_PKG_VERSION")
+                                    ),
+                                    &msg,
+                                )
+                                .await
+                                .unwrap();
                         }
                         if cleanargs[0] == "say" {
                             if cleanargs.len() == 1 {
@@ -150,7 +160,7 @@ pub async fn main() {
                                 if tlt.len() == 1 {
                                     client
                                         .reply_to_privmsg(
-                                            translationv2::translate_text(
+                                            lingva_translate::translate_text(
                                                 "auto".to_owned(),
                                                 "en".to_owned(),
                                                 cleanargs[1..].join(" "),
@@ -163,7 +173,7 @@ pub async fn main() {
                                 } else {
                                     client
                                         .reply_to_privmsg(
-                                            translationv2::translate_text(
+                                            lingva_translate::translate_text(
                                                 tlt[0].to_owned(),
                                                 tlt[1].to_owned(),
                                                 cleanargs[2..].join(" "),
@@ -177,7 +187,7 @@ pub async fn main() {
                             } else {
                                 client
                                     .reply_to_privmsg(
-                                        translationv2::translate_text(
+                                        lingva_translate::translate_text(
                                             "auto".to_owned(),
                                             "en".to_owned(),
                                             cleanargs[1..].join(" "),
@@ -204,7 +214,7 @@ pub async fn main() {
                                 if tlt.len() == 1 {
                                     client
                                         .reply_to_privmsg(
-                                            translation::translate_text(
+                                            libre_translate::translate_text(
                                                 "auto".to_owned(),
                                                 "en".to_owned(),
                                                 cleanargs[1..].join(" "),
@@ -217,7 +227,7 @@ pub async fn main() {
                                 } else {
                                     client
                                         .reply_to_privmsg(
-                                            translation::translate_text(
+                                            libre_translate::translate_text(
                                                 tlt[0].to_owned(),
                                                 tlt[1].to_owned(),
                                                 cleanargs[2..].join(" "),
@@ -231,7 +241,7 @@ pub async fn main() {
                             } else {
                                 client
                                     .reply_to_privmsg(
-                                        translation::translate_text(
+                                        libre_translate::translate_text(
                                             "auto".to_owned(),
                                             "en".to_owned(),
                                             cleanargs[1..].join(" "),

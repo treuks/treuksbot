@@ -1,7 +1,7 @@
-pub mod types;
-pub mod sanitization; 
-pub mod translation; 
-pub mod translationv2; 
 pub mod definition;
-pub mod status;
 pub mod helix;
+pub mod libre_translate;
+pub mod lingva_translate;
+pub mod sanitization;
+pub mod status;
+pub mod types;
