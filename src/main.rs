@@ -145,8 +145,8 @@ pub async fn main() {
                                     )
                                     .await
                                     .unwrap();
-                            } else if cleanargs[1].contains(">") == true {
-                                let tlt: Vec<&str> = cleanargs[1].split(">").collect();
+                            } else if cleanargs[1].contains('>') {
+                                let tlt: Vec<&str> = cleanargs[1].split('>').collect();
                                 if tlt.len() == 1 {
                                     client
                                         .reply_to_privmsg(
@@ -199,8 +199,8 @@ pub async fn main() {
                                     )
                                     .await
                                     .unwrap();
-                            } else if cleanargs[1].contains(">") == true {
-                                let tlt: Vec<&str> = cleanargs[1].split(">").collect();
+                            } else if cleanargs[1].contains('>') {
+                                let tlt: Vec<&str> = cleanargs[1].split('>').collect();
                                 if tlt.len() == 1 {
                                     client
                                         .reply_to_privmsg(

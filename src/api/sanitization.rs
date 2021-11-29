@@ -34,7 +34,7 @@ pub async fn sanitize_text(text: String) -> Result<String, Box<dyn std::error::E
         //println!("Response Body: {:#?}", res);
 
     let js = res.json::<MessageResponse>().await.expect("Couldn't turn the response body into a proper struct");
-    if js.banned == true {
+    if js.banned {
         Ok("[REDACTED]".to_owned())
     } else {
         Ok(format!("🌲 {}", text))
