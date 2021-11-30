@@ -14,9 +14,3 @@ pub struct Secret {
     pub client_secret: String,
     pub channel_name: String,
 }
-
-impl Config {
-    pub fn new(secret: Secret) -> Self {
-        Config { secret }
-    }
-}

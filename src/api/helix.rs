@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 use crate::api::types;
-use std::fs;
-use std::fs::File;
-use std::io::{BufWriter, Write};
+//use std::fs;
+//use std::fs::File;
+//use std::io::{BufWriter, Write};
 use std::sync::Arc;
-use toml_edit::Document;
+//use toml_edit::Document;
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "snake_case")]
@@ -66,7 +66,7 @@ pub struct OauthResponse {
     scope: Vec<String>,
     token_type: String,
 }
-
+/*
 pub async fn check_oauth_token(credentials: Arc<types::Config>, credentials_location: String) {
     let f = File::create(&credentials_location).unwrap();
     let mut f = BufWriter::new(f);
@@ -107,7 +107,7 @@ pub async fn check_oauth_token(credentials: Arc<types::Config>, credentials_loca
         f.write_all(doc.to_string().as_bytes()).unwrap();
         eprintln!("Everything seems okay");
     }
-}
+}*/
 
 pub async fn get_broadcaster_id(
     credentials: Arc<types::Config>,
