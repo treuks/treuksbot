@@ -1,5 +1,3 @@
-use reqwest::Client;
-use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
 use crate::api::types;
@@ -7,7 +5,7 @@ use std::fs;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::sync::Arc;
-use toml_edit::{value, Document};
+use toml_edit::Document;
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "snake_case")]

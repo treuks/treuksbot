@@ -1,6 +1,3 @@
-use reqwest::{Client, StatusCode};
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 //use hyper::header::{Headers, UserAgent}; // *TODO: Use this when implementing wikipedia
 
 // *TODO: Implement urban dictionary, and wikipedia api

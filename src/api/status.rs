@@ -1,5 +1,3 @@
-use serde::Serialize;
-
 pub async fn is_up(text: String) {
     let req_client = reqwest::Client::new();
     let res = req_client
