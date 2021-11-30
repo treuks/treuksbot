@@ -1,8 +1,5 @@
 use crate::api::sanitization;
-use reqwest::Client;
-use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(rename_all = "camelCase")]

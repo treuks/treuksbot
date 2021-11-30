@@ -1,6 +1,4 @@
-use reqwest::Client;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use serde::Serialize;
 
 pub async fn is_up(text: String) {
     let req_client = reqwest::Client::new();
