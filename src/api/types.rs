@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
-    pub secret: Secret
+    pub secret: Secret,
 }
 
 #[derive(Debug, Deserialize)]
@@ -14,11 +14,9 @@ pub struct Secret {
     pub client_secret: String,
     pub channel_name: String,
 }
- 
+
 impl Config {
     pub fn new(secret: Secret) -> Self {
-        Config {
-            secret
-        }
+        Config { secret }
     }
 }
