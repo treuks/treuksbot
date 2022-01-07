@@ -13,4 +13,5 @@ pub struct Secret {
     pub client_id: String,
     pub client_secret: String,
     pub channel_name: String,
+    pub openweather_oauth: String,
 }

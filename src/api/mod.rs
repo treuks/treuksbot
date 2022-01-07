@@ -5,3 +5,4 @@ pub mod lingva_translate;
 pub mod sanitization;
 pub mod status;
 pub mod types;
+pub mod weather;

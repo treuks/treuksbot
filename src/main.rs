@@ -8,7 +8,7 @@ use twitch_irc::ClientConfig;
 use twitch_irc::SecureTCPTransport;
 use twitch_irc::TwitchIRCClient;
 //use std::collections::HashMap;
-use crate::api::{helix, libre_translate, lingva_translate, sanitization, types};
+use crate::api::{helix, libre_translate, lingva_translate, sanitization, types, weather};
 use humantime::format_duration;
 use std::sync::Arc;
 use std::time::Instant;
@@ -239,10 +239,52 @@ pub async fn main() {
                                 .unwrap();
                         }
 
-                        /*if cleanargs[0] == "status"{
-                                status::is_up(cleanargs[1].to_owned());
-                        }*/
-                    }
+                        if cleanargs[0] == "weather" {
+                            if cleanargs.len() == 1 {
+                                client
+                                    .reply_to_privmsg(
+                                        "🌲 You did not enter a region".to_owned(),
+                                        &msg,
+                                    )
+                                    .await
+                                    .unwrap();
+                            } else {
+                                let open_weather_map_credentials =
+                                    credentials.secret.openweather_oauth.clone();
+                                let weather_result = weather::get_weather(
+                                    cleanargs[1..].join(" ").to_string(),
+                                    open_weather_map_credentials,
+                                )
+                                .await;
+                                match weather_result {
+                                    Ok(response) =>
+                                    match response.sys.country {
+                                        Some(countryexists) =>
+                                        client.reply_to_privmsg(format!("The weather in {}/{}, is: {} | Temperature is {}°C but it feels like {}°C ",
+                                        response.name,
+                                        countryexists,
+                                        response.weather[0].main,
+                                        response.main.temp,
+                                        response.main.feels_like,
+                                    ),
+                                        &msg,
+                                    ).await.unwrap(),
+                                    None =>
+                                            client.reply_to_privmsg(format!("The weather in {} is: {} | Temperature is {}°C but it feels like {}°C ",
+                                            response.name,
+                                            response.weather[0].main,
+                                            response.main.temp,
+                                            response.main.feels_like,
+                                        ),
+                                            &msg,
+                                        ).await.unwrap()
+
+                                    },
+                                    Err(e) => client.reply_to_privmsg(format!("{}", e), &msg).await.unwrap()
+                                }
+                            }
+                        }
+                    };
                 }
                 ServerMessage::Whisper(msg) => {
                     println!("(w) {}: {}", msg.sender.name, msg.message_text);
@@ -251,6 +293,7 @@ pub async fn main() {
             }
         }
     });
+
     // join the channel
 
     // keep the tokio executor alive.
