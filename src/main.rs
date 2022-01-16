@@ -78,7 +78,7 @@ pub async fn main() {
                                 .reply_to_privmsg(
                                     format!(
                                         "🌲 Pong! The bot has been running for {} | Version: {}",
-                                        format_duration(cpingtime).to_string(),
+                                        format_duration(cpingtime),
                                         env!("CARGO_PKG_VERSION")
                                     ),
                                     &msg,
