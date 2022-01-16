@@ -260,7 +260,7 @@ pub async fn main() {
                                     Ok(response) =>
                                     match response.sys.country {
                                         Some(countryexists) =>
-                                        client.reply_to_privmsg(format!("The weather in {}/{}, is: {} | Temperature is {}°C but it feels like {}°C ",
+                                        client.reply_to_privmsg(format!("🌲 The weather in {}/{}, is: {} | Temperature is {}°C | Feels like {}°C ",
                                         response.name,
                                         countryexists,
                                         response.weather[0].main,
@@ -270,7 +270,7 @@ pub async fn main() {
                                         &msg,
                                     ).await.unwrap(),
                                     None =>
-                                            client.reply_to_privmsg(format!("The weather in {} is: {} | Temperature is {}°C but it feels like {}°C ",
+                                            client.reply_to_privmsg(format!("🌲 The weather in {} is: {} | Temperature is {}°C | Feels like {}°C ",
                                             response.name,
                                             response.weather[0].main,
                                             response.main.temp,
