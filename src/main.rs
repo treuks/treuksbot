@@ -239,6 +239,44 @@ pub async fn main() {
                                 .unwrap();
                         }
 
+                        if cleanargs[0] == "tuck" {
+                            if cleanargs.len() == 1 {
+                                client
+                                    .reply_to_privmsg(
+                                        "🌲 You didn't have anybody to tuck you in, so you tucked yourself in Sadge".to_owned(),
+                                        &msg,
+                                    )
+                                    .await
+                                    .unwrap();
+                            } else {
+                                client
+                                    .privmsg(chname.to_owned(), 
+                                    format!("🌲 You tucked {} into bed FeelsOkayMan 👉 🛏", cleanargs[1])
+                                )
+                                    .await
+                                    .unwrap();
+                            }
+                        }
+
+                        if cleanargs[0] == "truck" {
+                            if cleanargs.len() == 1 {
+                                client
+                                    .reply_to_privmsg(
+                                        "🌲 Aww shucks, you got ran over KKona".to_owned(),
+                                        &msg,
+                                    )
+                                    .await
+                                    .unwrap();
+                            } else {
+                                client
+                                    .privmsg(chname.to_owned(), 
+                                    format!("🌲 You tucked {} into bed with a big, big truck KKona 👉 🛏", cleanargs[1])
+                                )
+                                    .await
+                                    .unwrap();
+                            }
+                        }
+
                         if cleanargs[0] == "weather" {
                             if cleanargs.len() == 1 {
                                 client
