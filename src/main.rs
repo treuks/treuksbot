@@ -250,9 +250,13 @@ pub async fn main() {
                                     .unwrap();
                             } else {
                                 client
-                                    .privmsg(chname.to_owned(), 
-                                    format!("🌲 You tucked {} into bed FeelsOkayMan 👉 🛏", cleanargs[1])
-                                )
+                                    .privmsg(
+                                        chname.to_owned(),
+                                        format!(
+                                            "🌲 You tucked {} into bed FeelsOkayMan 👉 🛏",
+                                            cleanargs[1]
+                                        ),
+                                    )
                                     .await
                                     .unwrap();
                             }
@@ -269,7 +273,7 @@ pub async fn main() {
                                     .unwrap();
                             } else {
                                 client
-                                    .privmsg(chname.to_owned(), 
+                                    .privmsg(chname.to_owned(),
                                     format!("🌲 You tucked {} into bed with a big, big truck KKona 👉 🛏", cleanargs[1])
                                 )
                                     .await
