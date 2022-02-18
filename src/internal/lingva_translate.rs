@@ -1,6 +1,6 @@
 use crate::api::translate;
 
-pub async fn translate_text(length: usize, clean_args_ref: &Vec<&str>) -> String {
+pub async fn translate_text(length: usize, clean_args_ref: &[&str]) -> String {
     if length == 1 {
         "🌲 You did not put what to translate".to_owned()
     } else if clean_args_ref[1].contains('>') {
