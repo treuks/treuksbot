@@ -1,5 +1,6 @@
 //------------Modules------------------------------------------
 mod api;
+mod internal;
 //------------Crates-------------------------------------------
 use std::fs;
 use twitch_irc::login::StaticLoginCredentials;
@@ -8,8 +9,8 @@ use twitch_irc::ClientConfig;
 use twitch_irc::SecureTCPTransport;
 use twitch_irc::TwitchIRCClient;
 //use std::collections::HashMap;
-use crate::api::{helix, libre_translate, lingva_translate, sanitization, types, weather};
-use humantime::format_duration;
+use crate::api::{helix, types, weather};
+use crate::internal::{lingva_translate, ping, say};
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -29,7 +30,7 @@ pub async fn main() {
             .expect("I couldn't find any credentials, is the file filled out correctly?"),
     );
 
-    let chname = credentials.secret.channel_name.to_owned();
+    let channel_name = credentials.secret.channel_name.to_owned();
 
     let config = ClientConfig::new_simple(StaticLoginCredentials::new(
         credentials.secret.login.to_owned(),
@@ -41,7 +42,7 @@ pub async fn main() {
     // first thing you should do: start consuming incoming messages,
     // otherwise they will back up.
     let join_handle = tokio::spawn(async move {
-        client.join(chname.to_owned());
+        client.join(channel_name.to_owned());
         while let Some(message) = incoming_messages.recv().await {
             match message {
                 ServerMessage::Privmsg(msg) => {
@@ -51,14 +52,20 @@ pub async fn main() {
                     );
                     if msg.sender.id == "477589350" && msg.message_text == "pepegaSit nevermind" {
                         client
-                            .privmsg(chname.to_owned(), "ApuApustaja Slapp slchbot".to_owned())
+                            .privmsg(
+                                channel_name.to_owned(),
+                                "ApuApustaja Slapp slchbot".to_owned(),
+                            )
                             .await
                             .unwrap();
                     }
 
                     if msg.sender.id == "82008718" && msg.message_text == "pajaS 🚨 ALERT" {
                         client
-                            .privmsg(chname.to_owned(), "/me pajaGIGA 🚨 ТРИВОГА".to_owned())
+                            .privmsg(
+                                channel_name.to_owned(),
+                                "/me pajaGIGA 🚨 ТРИВОГА".to_owned(),
+                            )
                             .await
                             .unwrap();
                     }
@@ -68,156 +75,32 @@ pub async fn main() {
                             .message_text
                             .replacen("k! ", "", 1)
                             .replacen("k!", "", 1);
-                        let cleanargs: Vec<&str> = args.split_whitespace().collect();
+                        let clean_args: Vec<&str> = args.split_whitespace().collect();
 
-                        if cleanargs[0] == "ping" {
-                            let ping_time = Instant::now();
-                            let cpingtime = ping_time - run_time;
-
-                            client
+                        match clean_args[0] {
+                            "ping" => client
+                                .reply_to_privmsg(ping::ping(run_time).await, &msg)
+                                .await
+                                .unwrap(),
+                            "say" => client
                                 .reply_to_privmsg(
-                                    format!(
-                                        "🌲 Pong! The bot has been running for {} | Version: {}",
-                                        format_duration(cpingtime),
-                                        env!("CARGO_PKG_VERSION")
-                                    ),
+                                    say::say(clean_args.len(), &clean_args).await,
                                     &msg,
                                 )
                                 .await
-                                .unwrap();
-                        }
-                        if cleanargs[0] == "say" {
-                            if cleanargs.len() == 1 {
-                                client
-                                    .reply_to_privmsg(
-                                        "🌲 I do not have anything to say".to_owned(),
-                                        &msg,
-                                    )
-                                    .await
-                                    .unwrap();
-                            } else {
-                                let say = sanitization::sanitize_text(
-                                    cleanargs[1..].join(" ").to_owned(),
-                                );
-                                client
-                                    .reply_to_privmsg(say.await.unwrap(), &msg)
-                                    .await
-                                    .unwrap();
-                            }
-                        }
-                        if cleanargs[0] == "commands" {
-                            client.reply_to_privmsg("🌲 The command prefix is k! The commands are: ping, say, translate, title".to_owned(), &msg).await.unwrap();
-                        }
-
-                        if cleanargs[0] == "translate" {
-                            if cleanargs.len() == 1 {
-                                client
-                                    .reply_to_privmsg(
-                                        "🌲 You did not put what to translate".to_owned(),
-                                        &msg,
-                                    )
-                                    .await
-                                    .unwrap();
-                            } else if cleanargs[1].contains('>') {
-                                let tlt: Vec<&str> = cleanargs[1].split('>').collect();
-                                if tlt.len() == 1 {
-                                    client
-                                        .reply_to_privmsg(
-                                            lingva_translate::translate_text(
-                                                "auto".to_owned(),
-                                                "en".to_owned(),
-                                                cleanargs[1..].join(" "),
-                                            )
-                                            .await,
-                                            &msg,
-                                        )
-                                        .await
-                                        .unwrap();
-                                } else {
-                                    client
-                                        .reply_to_privmsg(
-                                            lingva_translate::translate_text(
-                                                tlt[0].to_owned(),
-                                                tlt[1].to_owned(),
-                                                cleanargs[2..].join(" "),
-                                            )
-                                            .await,
-                                            &msg,
-                                        )
-                                        .await
-                                        .unwrap();
-                                }
-                            } else {
-                                client
-                                    .reply_to_privmsg(
-                                        lingva_translate::translate_text(
-                                            "auto".to_owned(),
-                                            "en".to_owned(),
-                                            cleanargs[1..].join(" "),
-                                        )
+                                .unwrap(),
+                            "translate" => client
+                                .reply_to_privmsg(
+                                    lingva_translate::translate_text(clean_args.len(), &clean_args)
                                         .await,
-                                        &msg,
-                                    )
-                                    .await
-                                    .unwrap();
-                            }
-                        }
+                                    &msg,
+                                )
+                                .await
+                                .unwrap(),
+                            _ => (),
+                        };
 
-                        if cleanargs[0] == "ltranslate" {
-                            if cleanargs.len() == 1 {
-                                client
-                                    .reply_to_privmsg(
-                                        "🌲 You did not put what to translate".to_owned(),
-                                        &msg,
-                                    )
-                                    .await
-                                    .unwrap();
-                            } else if cleanargs[1].contains('>') {
-                                let tlt: Vec<&str> = cleanargs[1].split('>').collect();
-                                if tlt.len() == 1 {
-                                    client
-                                        .reply_to_privmsg(
-                                            libre_translate::translate_text(
-                                                "auto".to_owned(),
-                                                "en".to_owned(),
-                                                cleanargs[1..].join(" "),
-                                            )
-                                            .await,
-                                            &msg,
-                                        )
-                                        .await
-                                        .unwrap();
-                                } else {
-                                    client
-                                        .reply_to_privmsg(
-                                            libre_translate::translate_text(
-                                                tlt[0].to_owned(),
-                                                tlt[1].to_owned(),
-                                                cleanargs[2..].join(" "),
-                                            )
-                                            .await,
-                                            &msg,
-                                        )
-                                        .await
-                                        .unwrap();
-                                }
-                            } else {
-                                client
-                                    .reply_to_privmsg(
-                                        libre_translate::translate_text(
-                                            "auto".to_owned(),
-                                            "en".to_owned(),
-                                            cleanargs[1..].join(" "),
-                                        )
-                                        .await,
-                                        &msg,
-                                    )
-                                    .await
-                                    .unwrap();
-                            }
-                        }
-
-                        if cleanargs[0] == "title" {
+                        if clean_args[0] == "title" {
                             let title_credentials = credentials.clone();
                             client
                                 .reply_to_privmsg(
@@ -228,7 +111,7 @@ pub async fn main() {
                                 .unwrap();
                         }
 
-                        if cleanargs[0] == "game" {
+                        if clean_args[0] == "game" {
                             let game_credentials = credentials.clone();
                             client
                                 .reply_to_privmsg(
@@ -239,8 +122,8 @@ pub async fn main() {
                                 .unwrap();
                         }
 
-                        if cleanargs[0] == "tuck" {
-                            if cleanargs.len() == 1 {
+                        if clean_args[0] == "tuck" {
+                            if clean_args.len() == 1 {
                                 client
                                     .reply_to_privmsg(
                                         "🌲 You didn't have anybody to tuck you in, so you tucked yourself in Sadge".to_owned(),
@@ -251,10 +134,10 @@ pub async fn main() {
                             } else {
                                 client
                                     .privmsg(
-                                        chname.to_owned(),
+                                        channel_name.to_owned(),
                                         format!(
                                             "🌲 You tucked {} into bed FeelsOkayMan 👉 🛏",
-                                            cleanargs[1]
+                                            clean_args[1]
                                         ),
                                     )
                                     .await
@@ -262,8 +145,8 @@ pub async fn main() {
                             }
                         }
 
-                        if cleanargs[0] == "truck" {
-                            if cleanargs.len() == 1 {
+                        if clean_args[0] == "truck" {
+                            if clean_args.len() == 1 {
                                 client
                                     .reply_to_privmsg(
                                         "🌲 Aww shucks, you got ran over KKona".to_owned(),
@@ -273,16 +156,16 @@ pub async fn main() {
                                     .unwrap();
                             } else {
                                 client
-                                    .privmsg(chname.to_owned(),
-                                    format!("🌲 You tucked {} into bed with a big, big truck KKona 👉 🛏", cleanargs[1])
+                                    .privmsg(channel_name.to_owned(),
+                                    format!("🌲 You tucked {} into bed with a big, big truck KKona 👉 🛏", clean_args[1])
                                 )
                                     .await
                                     .unwrap();
                             }
                         }
 
-                        if cleanargs[0] == "weather" {
-                            if cleanargs.len() == 1 {
+                        if clean_args[0] == "weather" {
+                            if clean_args.len() == 1 {
                                 client
                                     .reply_to_privmsg(
                                         "🌲 You did not enter a region".to_owned(),
@@ -294,7 +177,7 @@ pub async fn main() {
                                 let open_weather_map_credentials =
                                     credentials.secret.openweather_oauth.clone();
                                 let weather_result = weather::get_weather(
-                                    cleanargs[1..].join(" ").to_string(),
+                                    clean_args[1..].join(" ").to_string(),
                                     open_weather_map_credentials,
                                 )
                                 .await;
