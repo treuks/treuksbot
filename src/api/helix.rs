@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+/*use serde::{Deserialize, Serialize};
 
 use crate::api::types;
 //use std::fs;
@@ -66,7 +66,7 @@ pub struct OauthResponse {
     scope: Vec<String>,
     token_type: String,
 }
-/*
+
 pub async fn check_oauth_token(credentials: Arc<types::Config>, credentials_location: String) {
     let f = File::create(&credentials_location).unwrap();
     let mut f = BufWriter::new(f);
@@ -107,7 +107,7 @@ pub async fn check_oauth_token(credentials: Arc<types::Config>, credentials_loca
         f.write_all(doc.to_string().as_bytes()).unwrap();
         eprintln!("Everything seems okay");
     }
-}*/
+}
 
 pub async fn get_broadcaster_id(
     credentials: Arc<types::Config>,
@@ -216,3 +216,4 @@ pub async fn get_game(
         )),
     }
 }
+*/
