@@ -9,8 +9,8 @@ use twitch_irc::ClientConfig;
 use twitch_irc::SecureTCPTransport;
 use twitch_irc::TwitchIRCClient;
 //use std::collections::HashMap;
-use crate::api::{helix, types, weather};
-use crate::internal::{lingva_translate, ping, say};
+use crate::api::types;
+use crate::internal::{lingva_translate, ping, say, tucking, weather};
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -97,118 +97,34 @@ pub async fn main() {
                                 )
                                 .await
                                 .unwrap(),
+                            "weather" => client
+                                .reply_to_privmsg(
+                                    weather::get_weather(
+                                        clean_args.len(),
+                                        &clean_args,
+                                        credentials.secret.openweather_oauth.clone(),
+                                    )
+                                    .await,
+                                    &msg,
+                                )
+                                .await
+                                .unwrap(),
+                            "tuck" => client
+                                .reply_to_privmsg(
+                                    tucking::tuck(clean_args.len(), &clean_args).await,
+                                    &msg,
+                                )
+                                .await
+                                .unwrap(),
+                            "truck" => client
+                                .reply_to_privmsg(
+                                    tucking::truck(clean_args.len(), &clean_args).await,
+                                    &msg,
+                                )
+                                .await
+                                .unwrap(),
                             _ => (),
                         };
-
-                        if clean_args[0] == "title" {
-                            let title_credentials = credentials.clone();
-                            client
-                                .reply_to_privmsg(
-                                    helix::get_title(title_credentials).await.unwrap(),
-                                    &msg,
-                                )
-                                .await
-                                .unwrap();
-                        }
-
-                        if clean_args[0] == "game" {
-                            let game_credentials = credentials.clone();
-                            client
-                                .reply_to_privmsg(
-                                    helix::get_game(game_credentials).await.unwrap(),
-                                    &msg,
-                                )
-                                .await
-                                .unwrap();
-                        }
-
-                        if clean_args[0] == "tuck" {
-                            if clean_args.len() == 1 {
-                                client
-                                    .reply_to_privmsg(
-                                        "🌲 You didn't have anybody to tuck you in, so you tucked yourself in Sadge".to_owned(),
-                                        &msg,
-                                    )
-                                    .await
-                                    .unwrap();
-                            } else {
-                                client
-                                    .privmsg(
-                                        channel_name.to_owned(),
-                                        format!(
-                                            "🌲 You tucked {} into bed FeelsOkayMan 👉 🛏",
-                                            clean_args[1]
-                                        ),
-                                    )
-                                    .await
-                                    .unwrap();
-                            }
-                        }
-
-                        if clean_args[0] == "truck" {
-                            if clean_args.len() == 1 {
-                                client
-                                    .reply_to_privmsg(
-                                        "🌲 Aww shucks, you got ran over KKona".to_owned(),
-                                        &msg,
-                                    )
-                                    .await
-                                    .unwrap();
-                            } else {
-                                client
-                                    .privmsg(channel_name.to_owned(),
-                                    format!("🌲 You tucked {} into bed with a big, big truck KKona 👉 🛏", clean_args[1])
-                                )
-                                    .await
-                                    .unwrap();
-                            }
-                        }
-
-                        if clean_args[0] == "weather" {
-                            if clean_args.len() == 1 {
-                                client
-                                    .reply_to_privmsg(
-                                        "🌲 You did not enter a region".to_owned(),
-                                        &msg,
-                                    )
-                                    .await
-                                    .unwrap();
-                            } else {
-                                let open_weather_map_credentials =
-                                    credentials.secret.openweather_oauth.clone();
-                                let weather_result = weather::get_weather(
-                                    clean_args[1..].join(" ").to_string(),
-                                    open_weather_map_credentials,
-                                )
-                                .await;
-                                match weather_result {
-                                    Ok(response) =>
-                                    match response.sys.country {
-                                        Some(countryexists) =>
-                                        client.reply_to_privmsg(format!("🌲 The weather in {}/{}, is: {} | Temperature is {}°C | Feels like {}°C ",
-                                        response.name,
-                                        countryexists,
-                                        response.weather[0].main,
-                                        response.main.temp,
-                                        response.main.feels_like,
-                                    ),
-                                        &msg,
-                                    ).await.unwrap(),
-                                    None =>
-                                            client.reply_to_privmsg(format!("🌲 The weather in {} is: {} | Temperature is {}°C | Feels like {}°C ",
-                                            response.name,
-                                            response.weather[0].main,
-                                            response.main.temp,
-                                            response.main.feels_like,
-                                        ),
-                                            &msg,
-                                        ).await.unwrap()
-
-                                    },
-                                    Err(e) => client.reply_to_privmsg(format!("{}", e), &msg).await.unwrap()
-                                }
-                            }
-                        }
                     };
                 }
                 ServerMessage::Whisper(msg) => {
