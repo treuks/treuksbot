@@ -31,7 +31,6 @@ pub async fn main() {
     );
 
     let channel_name = credentials.secret.channel_name.to_owned();
-
     let config = ClientConfig::new_simple(StaticLoginCredentials::new(
         credentials.secret.login.to_owned(),
         Some(credentials.secret.oauth.to_owned()),
@@ -42,7 +41,10 @@ pub async fn main() {
     // first thing you should do: start consuming incoming messages,
     // otherwise they will back up.
     let join_handle = tokio::spawn(async move {
-        client.join(channel_name.to_owned());
+        match client.join(channel_name.to_owned()) {
+            Ok(join) => join,
+            Err(error) => panic!("Could not join the channel {:?}", error),
+        }
         while let Some(message) = incoming_messages.recv().await {
             match message {
                 ServerMessage::Privmsg(msg) => {
