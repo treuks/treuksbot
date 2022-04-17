@@ -12,6 +12,7 @@ pub async fn translate_text(
     base_language: String,
     target_language: String,
     text: String,
+    message_sender: &String,
 ) -> String {
     let req_client = reqwest::Client::new();
     let res = req_client
@@ -46,12 +47,15 @@ pub async fn translate_text(
             et
         ),
 
-        None => sanitization::sanitize_text(format!(
-            "({} > {}) {}",
-            &base_language,
-            &target_language,
-            response.translation.unwrap()
-        ))
+        None => sanitization::sanitize_text_v2(
+            format!(
+                "({} > {}) {}",
+                &base_language,
+                &target_language,
+                response.translation.unwrap()
+            ),
+            Some(message_sender.to_string()),
+        )
         .await
         .unwrap(),
     }

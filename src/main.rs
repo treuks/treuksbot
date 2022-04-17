@@ -93,8 +93,12 @@ pub async fn main() {
                                 .unwrap(),
                             "translate" => client
                                 .reply_to_privmsg(
-                                    lingva_translate::translate_text(clean_args.len(), &clean_args)
-                                        .await,
+                                    lingva_translate::translate_text(
+                                        clean_args.len(),
+                                        &clean_args,
+                                        &msg.sender.name,
+                                    )
+                                    .await,
                                     &msg,
                                 )
                                 .await
@@ -105,6 +109,7 @@ pub async fn main() {
                                         clean_args.len(),
                                         &clean_args,
                                         credentials.secret.openweather_oauth.clone(),
+                                        &msg.sender.name,
                                     )
                                     .await,
                                     &msg,
@@ -113,14 +118,16 @@ pub async fn main() {
                                 .unwrap(),
                             "tuck" => client
                                 .reply_to_privmsg(
-                                    tucking::tuck(clean_args.len(), &clean_args).await,
+                                    tucking::tuck(clean_args.len(), &clean_args, &msg.sender.name)
+                                        .await,
                                     &msg,
                                 )
                                 .await
                                 .unwrap(),
                             "truck" => client
                                 .reply_to_privmsg(
-                                    tucking::truck(clean_args.len(), &clean_args).await,
+                                    tucking::truck(clean_args.len(), &clean_args, &msg.sender.name)
+                                        .await,
                                     &msg,
                                 )
                                 .await
