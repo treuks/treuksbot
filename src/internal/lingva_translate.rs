@@ -1,3 +1,4 @@
+// TODO: add v2 sanitization
 use crate::api::translate;
 
 pub async fn translate_text(length: usize, clean_args_ref: &[&str]) -> String {

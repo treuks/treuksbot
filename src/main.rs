@@ -86,7 +86,7 @@ pub async fn main() {
                                 .unwrap(),
                             "say" => client
                                 .reply_to_privmsg(
-                                    say::say(clean_args.len(), &clean_args).await,
+                                    say::say(clean_args.len(), &clean_args, &msg.sender.name).await,
                                     &msg,
                                 )
                                 .await

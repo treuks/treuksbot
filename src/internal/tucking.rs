@@ -1,3 +1,4 @@
+// TODO: add v2 sanitization
 pub async fn tuck(length: usize, clean_args_ref: &[&str]) -> String {
     if length == 1 {
         "🌲 You didn't have anybody to tuck you in, so you tucked yourself in Sadge".to_owned()
