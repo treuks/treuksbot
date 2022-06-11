@@ -1,11 +1,7 @@
-use serde::Deserialize;
+use configr::{Config, Configr};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
-pub struct Config {
-    pub secret: Secret,
-}
-
-#[derive(Debug, Deserialize)]
+#[derive(Configr, Deserialize, Serialize, Default)]
 pub struct Secret {
     pub owner: String,
     pub login: String,

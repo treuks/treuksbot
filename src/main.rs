@@ -11,29 +11,30 @@ use twitch_irc::TwitchIRCClient;
 //use std::collections::HashMap;
 use crate::api::types;
 use crate::internal::{lingva_translate, ping, say, tucking, weather};
-use std::sync::Arc;
+use configr::Config;
+//use std::sync::Arc;
+use directories::ProjectDirs;
 use std::time::Instant;
 
 #[tokio::main]
 pub async fn main() {
     let run_time = Instant::now();
-    let file_location = format!("{}/.config/treuksbot/secret.toml", env!("HOME"));
-    // let file = fs::read_to_string(file_location).expect("I couldn't find the file");
-    // let credentials = Arc::<types::Config>::new(toml::from_str(&file).expect("I couldn't find any credentials, is the file filled out correctly?"));
 
-    // let token_clone = credentials.clone();
-    // helix::check_oauth_token(token_clone, file_location.to_owned()).await;
+    let credentials = match types::Secret::load("treuksbot", true) {
+        Ok(ok) => ok,
+        Err(er) => {
+            let location = ProjectDirs::from("io", "TreuKS", "treuksbot").unwrap();
+            println!("Config file not found. Attempting to create an empty one.");
+            fs::create_dir_all(location.config_dir()).unwrap();
+            panic!("{}", er);
+        }
+    };
 
-    let file = fs::read_to_string(file_location).expect("I couldn't find the file");
-    let credentials = Arc::<types::Config>::new(
-        toml::from_str(&file)
-            .expect("I couldn't find any credentials, is the file filled out correctly?"),
-    );
+    let channel_name = credentials.channel_name.to_owned();
 
-    let channel_name = credentials.secret.channel_name.to_owned();
     let config = ClientConfig::new_simple(StaticLoginCredentials::new(
-        credentials.secret.login.to_owned(),
-        Some(credentials.secret.oauth.to_owned()),
+        credentials.login.to_owned(),
+        Some(credentials.oauth.to_owned()),
     ));
     let (mut incoming_messages, client) =
         TwitchIRCClient::<SecureTCPTransport, StaticLoginCredentials>::new(config);
@@ -108,7 +109,7 @@ pub async fn main() {
                                     weather::get_weather(
                                         clean_args.len(),
                                         &clean_args,
-                                        credentials.secret.openweather_oauth.clone(),
+                                        credentials.openweather_oauth.clone(),
                                         &msg.sender.name,
                                     )
                                     .await,
