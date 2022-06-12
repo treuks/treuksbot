@@ -22,11 +22,37 @@ pub async fn main() {
 
     let credentials = match types::Secret::load("treuksbot", true) {
         Ok(ok) => ok,
-        Err(er) => {
+        Err(_er) => {
             let location = ProjectDirs::from("io", "TreuKS", "treuksbot").unwrap();
             println!("Config file not found. Attempting to create an empty one.");
-            fs::create_dir_all(location.config_dir()).unwrap();
-            panic!("{}", er);
+            match fs::create_dir_all(location.config_dir()) {
+                Ok(()) => {
+                    println!("OK: Directory has been created");
+                    println!("Creating the config file.");
+
+                    // TODO: If a config file already exist, error out.
+
+                    let config_file = fs::File::create(format!(
+                        "{}/config.toml",
+                        location.config_dir().to_str().unwrap()
+                    ))
+                    .unwrap();
+
+                    println!("OK: File has been created");
+
+                    types::Secret::populate_template(config_file)
+                        .expect("Couldn't fill in the file");
+                    println!("OK: Configuration file has been populated with a template");
+                    println!(
+                        "You need to go and edit the {} file with correct data.",
+                        format!("{}/config.toml", &location.config_dir().to_str().unwrap())
+                    );
+                    std::process::exit(0);
+                }
+                Err(er) => {
+                    panic!("Couldn't create a directory, {}", er)
+                }
+            }
         }
     };
 
