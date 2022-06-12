@@ -12,18 +12,22 @@ use twitch_irc::TwitchIRCClient;
 use crate::api::types;
 use crate::internal::{lingva_translate, ping, say, tucking, weather};
 use configr::Config;
-//use std::sync::Arc;
 use directories::ProjectDirs;
 use std::time::Instant;
 
 #[tokio::main]
 pub async fn main() {
     let run_time = Instant::now();
+    let location = ProjectDirs::from("io", "TreuKS", "treuksbot").unwrap();
+    let file = fs::read_to_string(format!(
+        "{}/config.toml",
+        &location.config_dir().to_str().unwrap()
+    ))
+    .expect("I couldn't find the file");
 
-    let credentials = match types::Secret::load("treuksbot", true) {
+    let credentials: types::Secret = match toml::from_str(&file) {
         Ok(ok) => ok,
         Err(_er) => {
-            let location = ProjectDirs::from("io", "TreuKS", "treuksbot").unwrap();
             println!("Config file not found. Attempting to create an empty one.");
             match fs::create_dir_all(location.config_dir()) {
                 Ok(()) => {
