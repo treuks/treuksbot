@@ -44,8 +44,8 @@ pub async fn main() {
                         .expect("Couldn't fill in the file");
                     println!("OK: Configuration file has been populated with a template");
                     println!(
-                        "You need to go and edit the {} file with correct data.",
-                        format!("{}/config.toml", &location.config_dir().to_str().unwrap())
+                        "You need to go and edit the {}/config.toml file with correct data.",
+                        &location.config_dir().to_str().unwrap()
                     );
                     std::process::exit(0);
                 }
