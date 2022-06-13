@@ -1,6 +1,7 @@
 //------------Modules------------------------------------------
 mod api;
 mod internal;
+
 //------------Crates-------------------------------------------
 use std::fs;
 use twitch_irc::login::StaticLoginCredentials;
@@ -11,29 +12,65 @@ use twitch_irc::TwitchIRCClient;
 //use std::collections::HashMap;
 use crate::api::types;
 use crate::internal::{lingva_translate, ping, say, tucking, weather};
-use std::sync::Arc;
+use configr::Config;
+use directories::ProjectDirs;
 use std::time::Instant;
 
 #[tokio::main]
 pub async fn main() {
     let run_time = Instant::now();
-    let file_location = format!("{}/.config/treuksbot/secret.toml", env!("HOME"));
-    // let file = fs::read_to_string(file_location).expect("I couldn't find the file");
-    // let credentials = Arc::<types::Config>::new(toml::from_str(&file).expect("I couldn't find any credentials, is the file filled out correctly?"));
+    let location = ProjectDirs::from("io", "TreuKS", "treuksbot").unwrap();
 
-    // let token_clone = credentials.clone();
-    // helix::check_oauth_token(token_clone, file_location.to_owned()).await;
+    let file = match fs::read_to_string(format!(
+        "{}/config.toml",
+        &location.config_dir().to_str().unwrap()
+    )) {
+        Ok(okay) => okay,
+        Err(_err) => {
+            // If the config file wasn't detected
+            eprintln!("Couldn't find the config file.");
+            println!("Recreating the config file.");
+            match fs::create_dir_all(location.config_dir()) {
+                Ok(()) => {
+                    let config_file = fs::File::create(format!(
+                        "{}/config.toml",
+                        location.config_dir().to_str().unwrap()
+                    ))
+                    .unwrap();
 
-    let file = fs::read_to_string(file_location).expect("I couldn't find the file");
-    let credentials = Arc::<types::Config>::new(
-        toml::from_str(&file)
-            .expect("I couldn't find any credentials, is the file filled out correctly?"),
-    );
+                    println!("OK: File has been created");
 
-    let channel_name = credentials.secret.channel_name.to_owned();
+                    types::Secret::populate_template(config_file)
+                        .expect("Couldn't fill in the file");
+                    println!("OK: Configuration file has been populated with a template");
+                    println!(
+                        "You need to go and edit the {}/config.toml file with correct data.",
+                        &location.config_dir().to_str().unwrap()
+                    );
+                    std::process::exit(0);
+                }
+                Err(er) => {
+                    panic!("Couldn't create a directory, {}", er)
+                }
+            }
+        }
+    };
+
+    let credentials: types::Secret = match toml::from_str(&file) {
+        // If the config file is incorrect
+        Ok(ok) => ok,
+        Err(_er) => {
+            eprintln!("The TOML file is incorrect. Please fix it.");
+            eprintln!("You can also delete the file and it will be recreated.");
+            std::process::exit(1);
+        }
+    };
+
+    let channel_name = credentials.channel_name.to_owned();
+
     let config = ClientConfig::new_simple(StaticLoginCredentials::new(
-        credentials.secret.login.to_owned(),
-        Some(credentials.secret.oauth.to_owned()),
+        credentials.login.to_owned(),
+        Some(credentials.oauth.to_owned()),
     ));
     let (mut incoming_messages, client) =
         TwitchIRCClient::<SecureTCPTransport, StaticLoginCredentials>::new(config);
@@ -108,7 +145,7 @@ pub async fn main() {
                                     weather::get_weather(
                                         clean_args.len(),
                                         &clean_args,
-                                        credentials.secret.openweather_oauth.clone(),
+                                        credentials.openweather_oauth.clone(),
                                         &msg.sender.name,
                                     )
                                     .await,
