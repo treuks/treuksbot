@@ -36,7 +36,7 @@ pub async fn main() {
                         "{}/config.toml",
                         location.config_dir().to_str().unwrap()
                     ))
-                        .unwrap();
+                    .unwrap();
 
                     println!("OK: File has been created");
 
@@ -135,7 +135,7 @@ pub async fn main() {
                                         &clean_args,
                                         &msg.sender.name,
                                     )
-                                        .await,
+                                    .await,
                                     &msg,
                                 )
                                 .await
@@ -148,7 +148,7 @@ pub async fn main() {
                                         credentials.openweather_oauth.clone(),
                                         &msg.sender.name,
                                     )
-                                        .await,
+                                    .await,
                                     &msg,
                                 )
                                 .await
