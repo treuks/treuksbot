@@ -1,6 +1,7 @@
 //------------Modules------------------------------------------
 mod api;
 mod internal;
+
 //------------Crates-------------------------------------------
 use std::fs;
 use twitch_irc::login::StaticLoginCredentials;
@@ -19,28 +20,23 @@ use std::time::Instant;
 pub async fn main() {
     let run_time = Instant::now();
     let location = ProjectDirs::from("io", "TreuKS", "treuksbot").unwrap();
-    let file = fs::read_to_string(format!(
+
+    let file = match fs::read_to_string(format!(
         "{}/config.toml",
         &location.config_dir().to_str().unwrap()
-    ))
-    .expect("I couldn't find the file");
-
-    let credentials: types::Secret = match toml::from_str(&file) {
-        Ok(ok) => ok,
-        Err(_er) => {
-            println!("Config file not found. Attempting to create an empty one.");
+    )) {
+        Ok(okay) => okay,
+        Err(_err) => {
+            // If the config file wasn't detected
+            eprintln!("Couldn't find the config file.");
+            println!("Recreating the config file.");
             match fs::create_dir_all(location.config_dir()) {
                 Ok(()) => {
-                    println!("OK: Directory has been created");
-                    println!("Creating the config file.");
-
-                    // TODO: If a config file already exist, error out.
-
                     let config_file = fs::File::create(format!(
                         "{}/config.toml",
                         location.config_dir().to_str().unwrap()
                     ))
-                    .unwrap();
+                        .unwrap();
 
                     println!("OK: File has been created");
 
@@ -57,6 +53,16 @@ pub async fn main() {
                     panic!("Couldn't create a directory, {}", er)
                 }
             }
+        }
+    };
+
+    let credentials: types::Secret = match toml::from_str(&file) {
+        // If the config file is incorrect
+        Ok(ok) => ok,
+        Err(_er) => {
+            eprintln!("The TOML file is incorrect. Please fix it.");
+            eprintln!("You can also delete the file and it will be recreated.");
+            std::process::exit(1);
         }
     };
 
@@ -129,7 +135,7 @@ pub async fn main() {
                                         &clean_args,
                                         &msg.sender.name,
                                     )
-                                    .await,
+                                        .await,
                                     &msg,
                                 )
                                 .await
@@ -142,7 +148,7 @@ pub async fn main() {
                                         credentials.openweather_oauth.clone(),
                                         &msg.sender.name,
                                     )
-                                    .await,
+                                        .await,
                                     &msg,
                                 )
                                 .await
