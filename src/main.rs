@@ -1,73 +1,22 @@
 //------------Modules------------------------------------------
 mod api;
+mod configparser;
 mod internal;
-
 //------------Crates-------------------------------------------
-use std::fs;
 use twitch_irc::login::StaticLoginCredentials;
 use twitch_irc::message::ServerMessage;
 use twitch_irc::ClientConfig;
 use twitch_irc::SecureTCPTransport;
 use twitch_irc::TwitchIRCClient;
 //use std::collections::HashMap;
-use crate::api::types;
 use crate::internal::{lingva_translate, ping, say, tucking, weather};
-use configr::Config;
-use directories::ProjectDirs;
 use std::time::Instant;
-
 #[tokio::main]
 pub async fn main() {
     let run_time = Instant::now();
-    let location = ProjectDirs::from("io", "TreuKS", "treuksbot").unwrap();
-
-    let file = match fs::read_to_string(format!(
-        "{}/config.toml",
-        &location.config_dir().to_str().unwrap()
-    )) {
-        Ok(okay) => okay,
-        Err(_err) => {
-            // If the config file wasn't detected
-            eprintln!("Couldn't find the config file.");
-            println!("Recreating the config file.");
-            match fs::create_dir_all(location.config_dir()) {
-                Ok(()) => {
-                    let config_file = fs::File::create(format!(
-                        "{}/config.toml",
-                        location.config_dir().to_str().unwrap()
-                    ))
-                    .unwrap();
-
-                    println!("OK: File has been created");
-
-                    types::Secret::populate_template(config_file)
-                        .expect("Couldn't fill in the file");
-                    println!("OK: Configuration file has been populated with a template");
-                    println!(
-                        "You need to go and edit the {}/config.toml file with correct data.",
-                        &location.config_dir().to_str().unwrap()
-                    );
-                    std::process::exit(0);
-                }
-                Err(er) => {
-                    panic!("Couldn't create a directory, {}", er)
-                }
-            }
-        }
-    };
-
-    let credentials: types::Secret = match toml::from_str(&file) {
-        // If the config file is incorrect
-        Ok(ok) => ok,
-        Err(_er) => {
-            eprintln!("The TOML file is incorrect. Please fix it.");
-            eprintln!("You can also delete the file and it will be recreated.");
-            std::process::exit(1);
-        }
-    };
+    let credentials = configparser::load_config();
 
     let channel_name = credentials.channel_name.to_owned();
-
     let config = ClientConfig::new_simple(StaticLoginCredentials::new(
         credentials.login.to_owned(),
         Some(credentials.oauth.to_owned()),
